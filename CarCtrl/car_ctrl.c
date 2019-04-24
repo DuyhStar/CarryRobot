@@ -1,9 +1,3 @@
-/*
- * car_ctrl.c
- *
- *  Created on: 2019.4.21
- *      Author: DuYihao
- */
 #include "car_ctrl.h"
 
 uint16_t w1_speed = 50;

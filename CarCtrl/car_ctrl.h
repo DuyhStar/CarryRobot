@@ -1,9 +1,3 @@
-/*
- * car_ctrl.h
- *
- *  Created on: 2019.4.21
- *      Author: DuYihao
- */
 #ifndef _CAR_CTRL_H_
 #define _CAR_CTRL_H_
 
