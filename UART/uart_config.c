@@ -31,7 +31,8 @@ void UART1_Init(uint32_t Baud)
     SysCtlPeripheralEnable(SYSCTL_PERIPH_GPIOB);
 
     GPIOPinConfigure(GPIO_PB0_U1RX);
-    GPIOPinTypeUART(GPIO_PORTB_BASE, GPIO_PIN_0);
+    GPIOPinConfigure(GPIO_PB1_U1TX);
+    GPIOPinTypeUART(GPIO_PORTB_BASE, GPIO_PIN_0 | GPIO_PIN_1);
 
     UARTConfigSetExpClk(UART1_BASE, SysCtlClockGet(), Baud, (UART_CONFIG_WLEN_8 | UART_CONFIG_STOP_ONE | UART_CONFIG_PAR_NONE));
 
@@ -62,8 +63,12 @@ void UART2_Init(uint32_t Baud)
 void UART3_Init(uint32_t Baud)
 {
     SysCtlPeripheralEnable(SYSCTL_PERIPH_UART3);
+    while(!SysCtlPeripheralReady(SYSCTL_PERIPH_UART3))
+        ;
     SysCtlPeripheralEnable(SYSCTL_PERIPH_GPIOC);
-
+    while(!SysCtlPeripheralReady(SYSCTL_PERIPH_GPIOC))
+        ;
+    
     GPIOPinConfigure(GPIO_PC6_U3RX);
     GPIOPinConfigure(GPIO_PC7_U3TX);
     GPIOPinTypeUART(GPIO_PORTC_BASE, GPIO_PIN_6 | GPIO_PIN_7);
@@ -77,8 +82,12 @@ void UART3_Init(uint32_t Baud)
 void UART4_Init(uint32_t Baud)
 {
     SysCtlPeripheralEnable(SYSCTL_PERIPH_UART4);
+    while(!SysCtlPeripheralReady(SYSCTL_PERIPH_UART4))
+        ;
     SysCtlPeripheralEnable(SYSCTL_PERIPH_GPIOC);
-
+    while(!SysCtlPeripheralReady(SYSCTL_PERIPH_GPIOC))
+        ;
+    
     GPIOPinConfigure(GPIO_PC4_U4RX);
     GPIOPinConfigure(GPIO_PC5_U4TX);
     GPIOPinTypeUART(GPIO_PORTC_BASE, GPIO_PIN_4 | GPIO_PIN_5);
