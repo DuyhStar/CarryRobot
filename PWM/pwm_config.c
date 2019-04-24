@@ -54,11 +54,11 @@ void PWM0_0123_init(void)
     PWMGenEnable(PWM0_BASE, PWM_GEN_0);
     PWMGenEnable(PWM0_BASE, PWM_GEN_1);
     
-    //打开输出
-    PWMOutputState(PWM0_BASE, PWM_OUT_0_BIT, true);
-    PWMOutputState(PWM0_BASE, PWM_OUT_1_BIT, true);
-    PWMOutputState(PWM0_BASE, PWM_OUT_2_BIT, true);
-    PWMOutputState(PWM0_BASE, PWM_OUT_3_BIT, true);
+    //不打开输出
+    PWMOutputState(PWM0_BASE, PWM_OUT_0_BIT, false);
+    PWMOutputState(PWM0_BASE, PWM_OUT_1_BIT, false);
+    PWMOutputState(PWM0_BASE, PWM_OUT_2_BIT, false);
+    PWMOutputState(PWM0_BASE, PWM_OUT_3_BIT, false);
 }
 
 void PWM0_67_init(void)
