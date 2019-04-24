@@ -3,16 +3,38 @@
 #include "uart_config.h"
 #include "car_ctrl.h"
 #include "servo.h"
+#include "timer_config.h"
+
+void Timer0_IntHandler(void)
+{
+    TimerIntClear(TIMER0_BASE, TIMER_TIMA_TIMEOUT);
+    UARTCharPut(UART1_BASE, 0x57);
+}
 
 //循迹
 void IntHandler_UART1(void)
 {
     UARTIntClear(UART1_BASE, UARTIntStatus(UART1_BASE, true));
 
-    char c = 0;
+    extern uint8_t track_addr;
+    extern uint8_t forward[8],back[8],left[8],right[8];
+    char c;
+    bool bit;
     while(UARTCharsAvail(UART1_BASE))
     {
         c = UARTCharGetNonBlocking(UART1_BASE);
+        for(uint8_t i = 0; i < 8; i++)
+        {
+            bit = c&0x01;
+            c = c>>1;
+            switch(track_addr)
+            {
+                case 1: forward[i] = !bit;  break;
+                case 2: back[i]    = !bit;  break;
+                case 3: left[i]    = !bit;  break;
+                case 4: right[i]   = !bit;  break;
+            }
+        }
     }
 }
 
@@ -55,12 +77,12 @@ void IntHandler_UART4(void)
 //WIFI
 void IntHandler_UART5(void)
 {
-    UARTIntClear(UART4_BASE, UARTIntStatus(UART4_BASE, true));
+    UARTIntClear(UART5_BASE, UARTIntStatus(UART5_BASE, true));
 
     char c = 0;
-    while(UARTCharsAvail(UART4_BASE))
+    while(UARTCharsAvail(UART5_BASE))
     {
-        c = UARTCharGetNonBlocking(UART4_BASE);
+        c = UARTCharGetNonBlocking(UART5_BASE);
     }
 }
 
