@@ -11,6 +11,8 @@ uint16_t w4_speed = 50;
 //4. PE3, PC5
 void car_ctrl_init(void)
 {
+    PWM0_0123_init();
+    
     SysCtlPeripheralEnable(SYSCTL_PERIPH_GPIOA);
     while(!SysCtlPeripheralReady(SYSCTL_PERIPH_GPIOA))
         ;
@@ -32,9 +34,13 @@ void car_ctrl_init(void)
     GPIOPinTypeGPIOOutput(GPIO_PORTD_BASE, GPIO_PIN_2 | GPIO_PIN_3);
     GPIOPinTypeGPIOOutput(GPIO_PORTE_BASE, GPIO_PIN_2 | GPIO_PIN_3);
     
-    car_stop();
+    //开启4路PWM输出
+    PWMOutputState(PWM0_BASE, PWM_OUT_0_BIT, true);
+    PWMOutputState(PWM0_BASE, PWM_OUT_1_BIT, true);
+    PWMOutputState(PWM0_BASE, PWM_OUT_2_BIT, true);
+    PWMOutputState(PWM0_BASE, PWM_OUT_3_BIT, true);
     
-    PWM0_0123_init();
+    car_stop();
 }
 
 void car_go_forward(uint16_t speed)
@@ -76,10 +82,10 @@ void car_turn_right(uint16_t speed)
 void car_stop(void)
 {
     //关掉4路PWM输出
-    PWMOutputState(PWM0_BASE, PWM_OUT_0_BIT, false);
-    PWMOutputState(PWM0_BASE, PWM_OUT_1_BIT, false);
-    PWMOutputState(PWM0_BASE, PWM_OUT_2_BIT, false);
-    PWMOutputState(PWM0_BASE, PWM_OUT_3_BIT, false);
+//    PWMOutputState(PWM0_BASE, PWM_OUT_0_BIT, false);
+//    PWMOutputState(PWM0_BASE, PWM_OUT_1_BIT, false);
+//    PWMOutputState(PWM0_BASE, PWM_OUT_2_BIT, false);
+//    PWMOutputState(PWM0_BASE, PWM_OUT_3_BIT, false);
     
     //方向控制信号全部置高，刹车
     GPIOPinWrite(GPIO_PORTA_BASE, GPIO_PIN_5, 0xFF);//1. PA5, PA6
