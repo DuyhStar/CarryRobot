@@ -20,6 +20,8 @@ void tracking_addr_init(void)
 
 void tracking_select(uint8_t addr)
 {
+    extern uint8_t track_addr;
+    track_addr = addr;
     switch(addr)
     {
         case 1:
@@ -38,11 +40,6 @@ void tracking_select(uint8_t addr)
             GPIOPinWrite(GPIO_PORTA_BASE, GPIO_PIN_4, 0xFF);
             break;
         case 4:
-            GPIOPinWrite(GPIO_PORTA_BASE, GPIO_PIN_2, 0xFF);
-            GPIOPinWrite(GPIO_PORTA_BASE, GPIO_PIN_3, 0xFF);
-            GPIOPinWrite(GPIO_PORTA_BASE, GPIO_PIN_4, 0xFF);
-            break;
-        default:
             GPIOPinWrite(GPIO_PORTA_BASE, GPIO_PIN_2, 0xFF);
             GPIOPinWrite(GPIO_PORTA_BASE, GPIO_PIN_3, 0xFF);
             GPIOPinWrite(GPIO_PORTA_BASE, GPIO_PIN_4, 0xFF);
