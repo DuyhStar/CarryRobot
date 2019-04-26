@@ -1,11 +1,6 @@
-/*
- * uart_config.c
- *
- *  Created on: 2019��3��18��
- *      Author: DuYihao
- */
 #include "uart_config.h"
 
+//Tx Rx
 void UART0_init(uint32_t Baud)
 {
     SysCtlPeripheralEnable(SYSCTL_PERIPH_GPIOA);
@@ -25,10 +20,16 @@ void UART0_init(uint32_t Baud)
     
     UARTStdioConfig(0, Baud, 16000000);
 }
+
+//Tx Rx
 void UART1_Init(uint32_t Baud)
 {
     SysCtlPeripheralEnable(SYSCTL_PERIPH_UART1);
+    while(!SysCtlPeripheralReady(SYSCTL_PERIPH_UART1))
+        ;
     SysCtlPeripheralEnable(SYSCTL_PERIPH_GPIOB);
+    while(!SysCtlPeripheralReady(SYSCTL_PERIPH_GPIOB))
+        ;
 
     GPIOPinConfigure(GPIO_PB0_U1RX);
     GPIOPinConfigure(GPIO_PB1_U1TX);
@@ -40,10 +41,16 @@ void UART1_Init(uint32_t Baud)
     UARTIntEnable(UART1_BASE, UART_INT_RX | UART_INT_RT);
     IntEnable(INT_UART1);
 }
+
+//Tx Rx
 void UART2_Init(uint32_t Baud)
 {
     SysCtlPeripheralEnable(SYSCTL_PERIPH_UART2);
+    while(!SysCtlPeripheralReady(SYSCTL_PERIPH_UART2))
+        ;
     SysCtlPeripheralEnable(SYSCTL_PERIPH_GPIOD);
+    while(!SysCtlPeripheralReady(SYSCTL_PERIPH_GPIOD))
+        ;
 
     /* Unlock PD7 */
     HWREG(GPIO_PORTD_BASE + GPIO_O_LOCK) = 0x4C4F434B;
@@ -60,6 +67,8 @@ void UART2_Init(uint32_t Baud)
     UARTIntEnable(UART2_BASE, UART_INT_RX | UART_INT_RT);
     IntEnable(INT_UART2);
 }
+
+//Tx Rx
 void UART3_Init(uint32_t Baud)
 {
     SysCtlPeripheralEnable(SYSCTL_PERIPH_UART3);
@@ -79,6 +88,8 @@ void UART3_Init(uint32_t Baud)
     UARTIntEnable(UART3_BASE, UART_INT_RX | UART_INT_RT);
     IntEnable(INT_UART3);
 }
+
+//Rx
 void UART4_Init(uint32_t Baud)
 {
     SysCtlPeripheralEnable(SYSCTL_PERIPH_UART4);
@@ -89,8 +100,7 @@ void UART4_Init(uint32_t Baud)
         ;
     
     GPIOPinConfigure(GPIO_PC4_U4RX);
-    GPIOPinConfigure(GPIO_PC5_U4TX);
-    GPIOPinTypeUART(GPIO_PORTC_BASE, GPIO_PIN_4 | GPIO_PIN_5);
+    GPIOPinTypeUART(GPIO_PORTC_BASE, GPIO_PIN_4);
 
     UARTConfigSetExpClk(UART4_BASE, SysCtlClockGet(), Baud, (UART_CONFIG_WLEN_8 | UART_CONFIG_STOP_ONE | UART_CONFIG_PAR_NONE));
 
@@ -98,10 +108,16 @@ void UART4_Init(uint32_t Baud)
     UARTIntEnable(UART4_BASE, UART_INT_RX | UART_INT_RT);
     IntEnable(INT_UART4);
 }
+
+//Tx Rx
 void UART5_Init(uint32_t Baud)
 {
     SysCtlPeripheralEnable(SYSCTL_PERIPH_UART5);
+    while(!SysCtlPeripheralReady(SYSCTL_PERIPH_UART5))
+        ;
     SysCtlPeripheralEnable(SYSCTL_PERIPH_GPIOE);
+    while(!SysCtlPeripheralReady(SYSCTL_PERIPH_GPIOE))
+        ;
 
     GPIOPinConfigure(GPIO_PE4_U5RX);
     GPIOPinConfigure(GPIO_PE5_U5TX);
@@ -113,13 +129,20 @@ void UART5_Init(uint32_t Baud)
     UARTIntEnable(UART5_BASE, UART_INT_RX | UART_INT_RT);
     IntEnable(INT_UART5);
 }
+
+//Tx Rx
 void UART7_Init(uint32_t Baud)
 {
     SysCtlPeripheralEnable(SYSCTL_PERIPH_UART7);
+    while(!SysCtlPeripheralReady(SYSCTL_PERIPH_UART7))
+        ;
     SysCtlPeripheralEnable(SYSCTL_PERIPH_GPIOE);
+    while(!SysCtlPeripheralReady(SYSCTL_PERIPH_GPIOE))
+        ;
 
     GPIOPinConfigure(GPIO_PE0_U7RX);
-    GPIOPinTypeUART(GPIO_PORTE_BASE, GPIO_PIN_0);
+    GPIOPinConfigure(GPIO_PE1_U7TX);
+    GPIOPinTypeUART(GPIO_PORTE_BASE, GPIO_PIN_0 | GPIO_PIN_1);
 
     UARTConfigSetExpClk(UART7_BASE, SysCtlClockGet(), Baud, (UART_CONFIG_WLEN_8 | UART_CONFIG_STOP_ONE | UART_CONFIG_PAR_NONE));
 

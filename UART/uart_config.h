@@ -1,10 +1,3 @@
-/*
- * uart_config.h
- *
- *  Created on: 2019.4.21
- *      Author: DuYihao
- */
- 
 #ifndef _UART_CONFIG_H_
 #define _UART_CONFIG_H_
 

@@ -71,6 +71,8 @@ void IntHandler_UART4(void)
     while(UARTCharsAvail(UART4_BASE))
     {
         c = UARTCharGetNonBlocking(UART4_BASE);
+        
+        
     }
 }
 
