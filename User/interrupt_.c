@@ -4,11 +4,26 @@
 #include "car_ctrl.h"
 #include "servo.h"
 #include "timer_config.h"
+#include "tracking.h"
 
 void Timer0_IntHandler(void)
 {
     TimerIntClear(TIMER0_BASE, TIMER_TIMA_TIMEOUT);
     UARTCharPut(UART1_BASE, 0x57);
+}
+
+void Timer1_IntHandler(void)
+{
+    TimerIntClear(TIMER1_BASE, TIMER_TIMA_TIMEOUT);
+    static uint16_t addr = 0;
+    addr++;
+    switch(addr)
+    {
+        case 1: tracking_select(addr);           break;
+        case 2: tracking_select(addr);           break;
+        case 3: tracking_select(addr);           break;
+        case 4: tracking_select(addr); addr = 0; break;
+    }
 }
 
 //循迹
