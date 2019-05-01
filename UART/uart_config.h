@@ -13,8 +13,10 @@
 #include "driverlib/uart.h"
 #include "driverlib/interrupt.h"
 #include "utils/uartstdio.h"
+#include <stdio.h>
 
 void UART0_init(uint32_t Baud);
+int  fputc(int ch, FILE *f);
 
 void UART1_Init(uint32_t Baud);
 void IntHandler_UART1(void);

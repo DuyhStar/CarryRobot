@@ -1,5 +1,5 @@
 #include "uart_config.h"
-
+#include <stdio.h>
 //Tx Rx
 void UART0_init(uint32_t Baud)
 {
@@ -19,6 +19,12 @@ void UART0_init(uint32_t Baud)
     UARTClockSourceSet(UART0_BASE, UART_CLOCK_PIOSC);//Clock 16MHz
     
     UARTStdioConfig(0, Baud, 16000000);
+}
+//------ rewrite fputc for printf funciton -----
+int fputc(int ch, FILE *f)
+{
+	UARTCharPut(UART0_BASE,(unsigned char)ch);
+	return ch;
 }
 
 //Tx Rx
