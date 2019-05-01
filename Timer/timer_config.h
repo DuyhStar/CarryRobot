@@ -13,4 +13,7 @@
 void timer0_init(uint32_t ms);
 void Timer0_IntHandler(void);
 
+void timer1_init(uint32_t ms);
+void Timer1_IntHandler(void);
+
 #endif /* _TIMER_CONFIG_H_ */
