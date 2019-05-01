@@ -14,7 +14,7 @@
 void tracking_init(uint32_t baud);
 void tracking_addr_init(void);
 void tracking_select(uint8_t addr);
-
+void track_inf_print(void);
 
 
 #endif /* _TRACKING_H_ */
