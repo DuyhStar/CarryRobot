@@ -48,9 +48,10 @@ int main()
     waitKey();
     while(1)
     {
-        car_trk_line(CAR_FORWARD, 0);
-        //track_inf_print();
-        delay_ms(50);
+        //car_trk_line(CAR_FORWARD, 1);
+        //car_left_trk_line();
+        track_inf_print();
+        //delay_ms(5);
     }
 }
 
