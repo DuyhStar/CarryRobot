@@ -4,14 +4,15 @@
 #include "timer_config.h"
 #include "car_ctrl.h"
 
-uint8_t  track_addr;
+uint8_t  track_addr = 1;
 
 void tracking_init(void)
 {
     UART1_Init(9600);
     tracking_addr_init();
+    tracking_select(track_addr); 
     timer0_init(10);        //触发循迹模块采集
-    timer1_init(20);        //切换循迹模块
+    //timer1_init(23);        //切换循迹模块
 }
 
 void tracking_addr_init(void)
@@ -26,8 +27,6 @@ void tracking_addr_init(void)
 
 void tracking_select(uint8_t addr)
 {
-    extern uint8_t track_addr;
-    track_addr = addr;
     switch(addr){
         case 1:
             GPIOPinWrite(GPIO_PORTA_BASE, GPIO_PIN_2, 0x00);
@@ -106,6 +105,51 @@ void car_trk_line(uint8_t dir, uint8_t wide)
         car_move(dir);
     }
 }
+void car_left_trk_line(void)
+{
+    extern uint8_t left[8], right[8];
+    uint8_t left_side, right_side;
+    left_side  = left[0] || left[1]; 
+    right_side = left[5] || left[6];
+    
+    if( left_side && right_side ){
+        car_move(CAR_LEFT);
+    }
+    else if(right_side || left_side){
+        uint8_t pos_left  = find_black_pos(left);
+        uint8_t pos_right = 6 - find_black_pos(right);
+        
+        while(1){
+            if(pos_left > pos_right){
+                car_rotate(CAR_RIGHT_ROTATE);
+            }
+            else if(pos_left < pos_right){
+                car_rotate(CAR_LEFT_ROTATE);
+            }
+            else{
+                break;
+            }
+            pos_left  = find_black_pos(left);
+            pos_right = 6-find_black_pos(right);
+        }
+        pos_left = find_black_pos(left);
+        while(1){
+            if(pos_left < 3){
+                car_move(CAR_LEFT);
+            }
+            else if(pos_left > 3){
+                car_move(CAR_RIGHT);
+            }
+            else{
+                break;
+            }
+            pos_left = find_black_pos(left);
+        }
+    }
+    else{
+        car_move(CAR_LEFT);
+    }
+}
 
 void trk_line_wide_select(uint8_t* line_inf, uint8_t wide, uint8_t* left_side, uint8_t* right_side)
 {
@@ -120,4 +164,13 @@ void trk_line_wide_select(uint8_t* line_inf, uint8_t wide, uint8_t* left_side, u
                 *right_side = line_inf[6];                 
                 break;
     }
+}
+
+uint8_t find_black_pos(uint8_t* line_inf)
+{
+    for(uint8_t i = 0; i < 7; i++){
+        if(line_inf[i] == 1)
+            return i;
+    }
+    return 0;
 }
