@@ -47,21 +47,38 @@ void IntHandler_UART1(void)
     extern uint8_t forward[8],back[8],left[8],right[8];
     char c;
     bool bit;
-    while(UARTCharsAvail(UART1_BASE))
-    {
+    while(UARTCharsAvail(UART1_BASE)){
         c = UARTCharGetNonBlocking(UART1_BASE);
-        for(uint8_t i = 0; i < 8; i++)
-        {
+        for(uint8_t i = 0; i < 8; i++){
             bit = c&0x01;
             c = c>>1;
-            switch(track_addr)
-            {
+            switch(track_addr){
                 case 1: forward[i] = !bit;  break;
                 case 2: back[i]    = !bit;  break;
                 case 3: left[i]    = !bit;  break;
                 case 4: right[i]   = !bit;  break;
             }
         }
+    }
+
+    track_addr++;
+    switch(track_addr){
+        case 1: 
+            tracking_select(track_addr);          
+            break;
+        case 2: 
+            tracking_select(track_addr);     
+            break;
+        case 3:
+            tracking_select(track_addr);         
+            break;
+        case 4:
+            tracking_select(track_addr);
+            break;
+        case 5:
+            tracking_select(1);   
+            track_addr = 1;
+            break;
     }
 }
 
