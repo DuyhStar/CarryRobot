@@ -22,7 +22,7 @@ void UART1_Init(uint32_t Baud);
 void IntHandler_UART1(void);
 
 void UART2_Init(uint32_t Baud);
-void IntHandler_UART2(void);
+//void IntHandler_UART2(void);
 
 void UART3_Init(uint32_t Baud);
 void IntHandler_UART3(void);
