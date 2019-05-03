@@ -11,10 +11,12 @@
 #include "inc/hw_types.h"
 #include "inc/hw_gpio.h"
 
-void tracking_init(uint32_t baud);
+void tracking_init(void);
 void tracking_addr_init(void);
 void tracking_select(uint8_t addr);
 void track_inf_print(void);
 
+void car_trk_line(uint8_t dir, uint8_t wide);
+void trk_line_wide_select(uint8_t* line_inf, uint8_t wide, uint8_t* left, uint8_t* right);
 
 #endif /* _TRACKING_H_ */
