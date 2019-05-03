@@ -1,9 +1,10 @@
 #include "car_ctrl.h"
+#include <stdio.h>
 
-uint16_t w1_speed = 30;
-uint16_t w2_speed = 30;
-uint16_t w3_speed = 30;
-uint16_t w4_speed = 30;
+uint16_t w1_speed = 50;
+uint16_t w2_speed = 50;
+uint16_t w3_speed = 50;
+uint16_t w4_speed = 50;
 
 //1. PA5, PA6
 //2. PA7, PD2
@@ -43,46 +44,67 @@ void car_ctrl_init(void)
     car_stop();
 }
 
-void car_go_forward(uint16_t speed)
+void car_move(uint8_t dir)
 {
-    w1_speed = w2_speed = w3_speed = w4_speed = speed;
-    car_wheel_dir_set(0, 0, 0, 0);
+    switch(dir)
+    {
+        case CAR_FORWARD:   car_wheel_dir_set(0, 0, 0, 0);  break;
+        case CAR_BACK:      car_wheel_dir_set(1, 1, 1, 1);  break;
+        case CAR_LEFT:      car_wheel_dir_set(1, 0, 0, 1);  break;
+        case CAR_RIGHT:     car_wheel_dir_set(0, 1, 1, 0);  break;
+    }
+    car_wheel_speed_set(w1_speed, w2_speed, w3_speed, w4_speed);
+}
+void car_rotate(uint8_t dir)
+{
+    switch(dir)
+    {
+        case CAR_LEFT_ROTATE:   car_wheel_dir_set(0, 0, 1, 1);  break;
+        case CAR_RIGHT_ROTATE:  car_wheel_dir_set(1, 1, 0, 0);  break;
+    }
     car_wheel_speed_set(w1_speed, w2_speed, w3_speed, w4_speed);
 }
 
-void car_go_back(uint16_t speed)
+void car_turn(uint8_t dir, uint8_t range)
 {
-    w1_speed = w2_speed = w3_speed = w4_speed = speed;
-    car_wheel_dir_set(1, 1, 1, 1);
-    car_wheel_speed_set(w1_speed, w2_speed, w3_speed, w4_speed);
-}
-
-void car_go_left(uint16_t speed)
-{
-    w1_speed = w2_speed = w3_speed = w4_speed = speed;
-    car_wheel_dir_set(1, 0, 0, 1);
-    car_wheel_speed_set(w1_speed, w2_speed, w3_speed, w4_speed);
-}
-
-void car_go_right(uint16_t speed)
-{
-    w1_speed = w2_speed = w3_speed = w4_speed = speed;
-    w1_speed = w2_speed = w3_speed = w4_speed = speed;
-    car_wheel_dir_set(0, 1, 1, 0);
-    car_wheel_speed_set(w1_speed, w2_speed, w3_speed, w4_speed);
-}
-
-void car_turn_left(uint16_t speed)
-{w1_speed = w2_speed = w3_speed = w4_speed = speed;
-    car_wheel_dir_set(1, 1, 0, 0);
-    car_wheel_speed_set(w1_speed, w2_speed, w3_speed, w4_speed);
-}
-
-void car_turn_right(uint16_t speed)
-{
-    w1_speed = w2_speed = w3_speed = w4_speed = speed;
-    car_wheel_dir_set(0, 0, 1, 1);
-    car_wheel_speed_set(w1_speed, w2_speed, w3_speed, w4_speed);
+    switch(dir)
+    {
+        case (CAR_FORWARD_LEFT):
+            car_wheel_dir_set(0, 0, 0, 0);  
+            car_wheel_speed_set(w1_speed+range, w2_speed+range, w3_speed-range, w4_speed-range);
+            break;
+        case (CAR_FORWARD_RIGHT):
+            car_wheel_dir_set(0, 0, 0, 0);
+            car_wheel_speed_set(w1_speed-range, w2_speed-range, w3_speed+range, w4_speed+range);
+            break;
+        
+        case (CAR_BACK_LEFT):
+            car_wheel_dir_set(1, 1, 1, 1);  
+            car_wheel_speed_set(w1_speed-range, w2_speed-range, w3_speed+range, w4_speed+range);
+            break;
+        case (CAR_BACK_RIGHT):
+            car_wheel_dir_set(1, 1, 1, 1); 
+            car_wheel_speed_set(w1_speed+range, w2_speed+range, w3_speed-range, w4_speed-range);
+            break;
+        
+        case (CAR_LEFT_LEFT):
+            car_wheel_dir_set(1, 0, 0, 1);
+            car_wheel_speed_set(w1_speed-range, w2_speed+range, w3_speed-range, w4_speed+range);
+            break;
+        case (CAR_LEFT_RIGHT):
+            car_wheel_dir_set(1, 0, 0, 1);
+            car_wheel_speed_set(w1_speed+range, w2_speed-range, w3_speed+range, w4_speed-range);
+            break;
+        
+        case (CAR_RIGHT_LEFT):
+            car_wheel_dir_set(0, 1, 1, 0);
+            car_wheel_speed_set(w1_speed+range, w2_speed-range, w3_speed+range, w4_speed-range);
+            break;
+        case (CAR_RIGHT_RIGHT):
+            car_wheel_dir_set(0, 1, 1, 0);
+            car_wheel_speed_set(w1_speed-range, w2_speed+range, w3_speed-range, w4_speed+range);
+            break;
+    }
 }
 
 void car_stop(void)
@@ -123,3 +145,4 @@ void car_wheel_dir_set(bool w1, bool w2, bool w3, bool w4)
     GPIOPinWrite(GPIO_PORTE_BASE, GPIO_PIN_3, ((w4==1)?0xFF:0x00));//4. PE3, PC5
     GPIOPinWrite(GPIO_PORTC_BASE, GPIO_PIN_5, ((w4==0)?0xFF:0x00));
 }
+

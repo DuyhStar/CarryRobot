@@ -3,15 +3,28 @@
 
 #include "pwm_config.h"
 
+#define CAR_FORWARD         0
+#define CAR_BACK            1
+#define CAR_LEFT            2
+#define CAR_RIGHT           3
+
+#define CAR_LEFT_ROTATE     4
+#define CAR_RIGHT_ROTATE    5
+
+#define CAR_FORWARD_LEFT    6
+#define CAR_FORWARD_RIGHT   7
+#define CAR_BACK_LEFT       8
+#define CAR_BACK_RIGHT      9
+#define CAR_LEFT_LEFT       10
+#define CAR_LEFT_RIGHT      11
+#define CAR_RIGHT_LEFT      12
+#define CAR_RIGHT_RIGHT     13
+
 void car_ctrl_init(void);
 
-void car_go_forward(uint16_t speed);
-void car_go_back(uint16_t speed);
-void car_go_left(uint16_t speed);
-void car_go_right(uint16_t speed);
-
-void car_turn_left(uint16_t speed);
-void car_turn_right(uint16_t speed);
+void car_move(uint8_t dir);
+void car_rotate(uint8_t dir);
+void car_turn(uint8_t dir, uint8_t range);
 
 void car_stop(void);
 
