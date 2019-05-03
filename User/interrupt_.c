@@ -25,7 +25,19 @@ void Timer1_IntHandler(void)
         case 4: tracking_select(addr); addr = 0; break;
     }
 }
-
+//void PORTF_IntHandler(void)
+//{
+//    uint32_t s = GPIOIntStatus(GPIO_PORTF_BASE, true);
+//    GPIOIntClear(GPIO_PORTF_BASE, s);
+//    
+//    if((s&GPIO_PIN_4) == GPIO_PIN_4)
+//    {
+//        while(!GPIOPinRead(GPIO_PORTF_BASE, GPIO_PIN_4))//等待按键松开
+//            ;
+//        extern bool key0_flag;
+//        key0_flag = 1;
+//    }
+//}
 //循迹
 void IntHandler_UART1(void)
 {
@@ -54,16 +66,16 @@ void IntHandler_UART1(void)
 }
 
 //总线舵机
-void IntHandler_UART2(void)
-{
-    UARTIntClear(UART2_BASE, UARTIntStatus(UART2_BASE, true));
+//void IntHandler_UART2(void)
+//{
+//    UARTIntClear(UART2_BASE, UARTIntStatus(UART2_BASE, true));
 
-    char c;
-    while(UARTCharsAvail(UART2_BASE))
-    {
-        c = UARTCharGetNonBlocking(UART2_BASE);
-    }
-}
+//    char c;
+//    while(UARTCharsAvail(UART2_BASE))
+//    {
+//        c = UARTCharGetNonBlocking(UART2_BASE);
+//    }
+//}
 
 //摄像头
 void IntHandler_UART3(void)
