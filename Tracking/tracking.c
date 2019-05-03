@@ -77,8 +77,7 @@ void track_inf_print(void)
 void car_trk_line(uint8_t dir, uint8_t wide)
 {
     extern uint8_t forward[8],back[8],left[8],right[8];
-    uint8_t left_side = 0, right_side = 0;
-    uint8_t *line_inf;
+    uint8_t left_side, right_side, *line_inf;
     
     switch(dir){
         case CAR_FORWARD: line_inf = forward; break;
@@ -88,23 +87,20 @@ void car_trk_line(uint8_t dir, uint8_t wide)
     }
     trk_line_wide_select(line_inf, wide, &left_side, &right_side);
     
-    if( left_side && right_side ){
+    if( (left_side && right_side) || (!left_side && !right_side) ){
         car_move(dir);
     }
     else if(right_side){
         car_rotate(CAR_RIGHT_ROTATE);
-        while(!line_inf[3])
-            ;
     }
     else if(left_side){
         car_rotate(CAR_LEFT_ROTATE);
-        while(!line_inf[3])
-            ;
     }
     else{
-        car_move(dir);
+        ;
     }
 }
+
 void car_left_trk_line(void)
 {
     extern uint8_t left[8], right[8];
@@ -149,6 +145,33 @@ void car_left_trk_line(void)
     else{
         car_move(CAR_LEFT);
     }
+}
+
+void car_go_n_line(uint8_t dir, uint8_t wide, uint8_t n)
+{
+    extern uint8_t forward[8], back[8], left[8], right[8];
+    uint8_t *count_line;
+    switch(dir){
+        case CAR_FORWARD: count_line = left;    break;
+        case CAR_BACK:    count_line = right;   break;
+        case CAR_LEFT:    count_line = back;    break;
+        case CAR_RIGHT:   count_line = forward; break;
+    }
+    uint8_t count = 0, pos = 6;
+    while(1){
+        car_trk_line(dir, wide);
+        if(count_line[pos]){
+            pos--;
+        }
+        if(pos == 2){
+            pos = 6;
+            count++;
+        }
+        if(count == n){
+            break;
+        }
+    }
+    car_stop();
 }
 
 void trk_line_wide_select(uint8_t* line_inf, uint8_t wide, uint8_t* left_side, uint8_t* right_side)

@@ -45,20 +45,20 @@ void PWM0_0123_init(void)
     PWMGenPeriodSet(PWM0_BASE, PWM_GEN_1, SysCtlClockGet()/pwm_clock_div/1000);//1KHz
     
     //脉宽设置
-    PWMPulseWidthSet(PWM0_BASE, PWM_OUT_0, PWMGenPeriodGet(PWM0_BASE, PWM_GEN_0)/10);//Duty:10%
-    PWMPulseWidthSet(PWM0_BASE, PWM_OUT_1, PWMGenPeriodGet(PWM0_BASE, PWM_GEN_0)/10);//Duty:10%
-    PWMPulseWidthSet(PWM0_BASE, PWM_OUT_2, PWMGenPeriodGet(PWM0_BASE, PWM_GEN_1)/10);//Duty:10%
-    PWMPulseWidthSet(PWM0_BASE, PWM_OUT_3, PWMGenPeriodGet(PWM0_BASE, PWM_GEN_1)/10);//Duty:10%
+    PWMPulseWidthSet(PWM0_BASE, PWM_OUT_0, PWMGenPeriodGet(PWM0_BASE, PWM_GEN_0)/100);//Duty:1%
+    PWMPulseWidthSet(PWM0_BASE, PWM_OUT_1, PWMGenPeriodGet(PWM0_BASE, PWM_GEN_0)/100);//Duty:1%
+    PWMPulseWidthSet(PWM0_BASE, PWM_OUT_2, PWMGenPeriodGet(PWM0_BASE, PWM_GEN_1)/100);//Duty:1%
+    PWMPulseWidthSet(PWM0_BASE, PWM_OUT_3, PWMGenPeriodGet(PWM0_BASE, PWM_GEN_1)/100);//Duty:1%
 
     //打开发生器
     PWMGenEnable(PWM0_BASE, PWM_GEN_0);
     PWMGenEnable(PWM0_BASE, PWM_GEN_1);
     
-    //不打开输出
-    PWMOutputState(PWM0_BASE, PWM_OUT_0_BIT, false);
-    PWMOutputState(PWM0_BASE, PWM_OUT_1_BIT, false);
-    PWMOutputState(PWM0_BASE, PWM_OUT_2_BIT, false);
-    PWMOutputState(PWM0_BASE, PWM_OUT_3_BIT, false);
+    //开启输出
+    PWMOutputState(PWM0_BASE, PWM_OUT_0_BIT, true);
+    PWMOutputState(PWM0_BASE, PWM_OUT_1_BIT, true);
+    PWMOutputState(PWM0_BASE, PWM_OUT_2_BIT, true);
+    PWMOutputState(PWM0_BASE, PWM_OUT_3_BIT, true);
 }
 
 void PWM0_67_init(void)

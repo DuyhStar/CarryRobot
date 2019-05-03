@@ -35,12 +35,6 @@ void car_ctrl_init(void)
     GPIOPinTypeGPIOOutput(GPIO_PORTD_BASE, GPIO_PIN_2 | GPIO_PIN_3);
     GPIOPinTypeGPIOOutput(GPIO_PORTE_BASE, GPIO_PIN_2 | GPIO_PIN_3);
     
-    //开启4路PWM输出
-    PWMOutputState(PWM0_BASE, PWM_OUT_0_BIT, true);
-    PWMOutputState(PWM0_BASE, PWM_OUT_1_BIT, true);
-    PWMOutputState(PWM0_BASE, PWM_OUT_2_BIT, true);
-    PWMOutputState(PWM0_BASE, PWM_OUT_3_BIT, true);
-    
     car_stop();
 }
 
