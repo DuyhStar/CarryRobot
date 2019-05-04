@@ -74,80 +74,126 @@ void track_inf_print(void)
     printf("\n");
 }
 
-void car_trk_line(uint8_t dir, uint8_t wide)
+void car_trk_line(uint8_t dir)
+{
+    switch(dir){
+        case CAR_FORWARD:
+        case CAR_BACK: 
+            car_forward_back_trk_line(dir); 
+            break;
+        case CAR_LEFT: 
+            car_left_trk_line();
+            break;
+        case CAR_RIGHT: 
+            car_right_trk_line(); 
+            break;
+    }
+}
+
+void car_forward_back_trk_line(uint8_t dir)
 {
     extern uint8_t forward[8],back[8],left[8],right[8];
-    uint8_t left_side, right_side, *line_inf;
+    uint8_t* line_inf;
     
     switch(dir){
         case CAR_FORWARD: line_inf = forward; break;
         case CAR_BACK:    line_inf = back;    break;
-        case CAR_LEFT:    line_inf = left;    break;
-        case CAR_RIGHT:   line_inf = right;   break;
     }
-    trk_line_wide_select(line_inf, wide, &left_side, &right_side);
     
-    if( (left_side && right_side) || (!left_side && !right_side) ){
-        car_move(dir);
-    }
-    else if(right_side){
+    uint8_t center = find_black_line_center(line_inf);
+    
+    uint8_t range = 2;
+    if(center >= 6+range){
         car_rotate(CAR_RIGHT_ROTATE);
     }
-    else if(left_side){
+    else if(center <= 6-range){
         car_rotate(CAR_LEFT_ROTATE);
     }
     else{
-        ;
+        car_move(dir);
     }
 }
-
 void car_left_trk_line(void)
 {
     extern uint8_t left[8], right[8];
-    uint8_t left_side, right_side;
-    left_side  = left[0] || left[1]; 
-    right_side = left[5] || left[6];
     
-    if( left_side && right_side ){
-        car_move(CAR_LEFT);
+    uint8_t left_center  = find_black_line_center(left);
+    uint8_t right_center = (12-find_black_line_center(right));
+    
+    if(compare_in_range(left_center, right_center) > 0){
+        car_rotate(CAR_RIGHT_ROTATE);
     }
-    else if(right_side || left_side){
-        uint8_t pos_left  = find_black_pos(left);
-        uint8_t pos_right = 6 - find_black_pos(right);
-        
-        while(1){
-            if(pos_left > pos_right){
-                car_rotate(CAR_RIGHT_ROTATE);
-            }
-            else if(pos_left < pos_right){
-                car_rotate(CAR_LEFT_ROTATE);
-            }
-            else{
-                break;
-            }
-            pos_left  = find_black_pos(left);
-            pos_right = 6-find_black_pos(right);
-        }
-        pos_left = find_black_pos(left);
-        while(1){
-            if(pos_left < 3){
-                car_move(CAR_LEFT);
-            }
-            else if(pos_left > 3){
-                car_move(CAR_RIGHT);
-            }
-            else{
-                break;
-            }
-            pos_left = find_black_pos(left);
-        }
+    else if(compare_in_range(left_center, right_center) < 0){
+        car_rotate(CAR_LEFT_ROTATE);
     }
     else{
-        car_move(CAR_LEFT);
+        uint8_t range = 3;
+        if(left_center >= 6+range){
+            car_move(CAR_FORWARD);
+        }
+        else if(left_center <= 6-range){
+            car_move(CAR_BACK);
+        }
+        else{
+            car_move(CAR_LEFT);
+        }
+    }
+}
+void car_right_trk_line(void)
+{
+    extern uint8_t left[8], right[8];
+    
+    uint8_t left_center  = (12-find_black_line_center(left));
+    uint8_t right_center = find_black_line_center(right);
+    
+    if(compare_in_range(left_center, right_center) > 0){
+        car_rotate(CAR_LEFT_ROTATE);
+    }
+    else if(compare_in_range(left_center, right_center) < 0){
+        car_rotate(CAR_RIGHT_ROTATE);
+    }
+    else{
+        uint8_t range = 3;
+        if(right_center >= 6+range){
+            car_move(CAR_BACK);
+        }
+        else if(right_center <= 6-range){
+            car_move(CAR_FORWARD);
+        }
+        else{
+            car_move(CAR_RIGHT);
+        }
     }
 }
 
-void car_go_n_line(uint8_t dir, uint8_t wide, uint8_t n)
+int8_t compare_in_range(uint8_t a, uint8_t b)
+{
+    uint8_t range = 1;
+    uint8_t a_min = a-range, a_max = a+range;
+    uint8_t b_min = b-range, b_max = b+range;
+    
+    if(a < b){
+        if(a_max < b_min){
+            return -1;
+        }
+        else{
+            return 0;
+        }
+    }
+    else if(a > b){
+        if(a_min > b_max){
+            return 1;
+        }
+        else{
+            return 0;
+        }
+    }
+    else{
+    }
+    return 0;
+}
+
+void car_go_n_line(uint8_t dir, uint8_t n)
 {
     extern uint8_t forward[8], back[8], left[8], right[8];
     uint8_t *count_line;
@@ -159,11 +205,11 @@ void car_go_n_line(uint8_t dir, uint8_t wide, uint8_t n)
     }
     uint8_t count = 0, pos = 6;
     while(1){
-        car_trk_line(dir, wide);
+        car_trk_line(dir);
         if(count_line[pos]){
             pos--;
         }
-        if(pos == 2){
+        if(pos == 3){
             pos = 6;
             count++;
         }
@@ -174,26 +220,34 @@ void car_go_n_line(uint8_t dir, uint8_t wide, uint8_t n)
     car_stop();
 }
 
-void trk_line_wide_select(uint8_t* line_inf, uint8_t wide, uint8_t* left_side, uint8_t* right_side)
+uint8_t find_black_line_center(uint8_t* line_inf)
 {
-    switch(wide){
-        case 0: *left_side  = line_inf[0] || line_inf[1] || line_inf[2]; 
-                *right_side = line_inf[5] || line_inf[6];   
-                break;
-        case 1: *left_side  = line_inf[0] || line_inf[1];
-                *right_side = line_inf[5] || line_inf[6];  
-                break;
-        case 2: *left_side  = line_inf[0];
-                *right_side = line_inf[6];                 
-                break;
+    uint8_t begin = 0, end = 0;
+    for(uint8_t i = 0; i <= 6; i++){
+        if(line_inf[i] == 1){
+            begin = i;
+            break;
+        }
     }
+    for(int8_t i = 6; i >= 0; i--){
+        if(line_inf[i] == 1){
+            end = i;
+            break;
+        }
+    }
+    
+    uint8_t center = begin*2 + end - begin;
+    return center;
 }
 
-uint8_t find_black_pos(uint8_t* line_inf)
-{
-    for(uint8_t i = 0; i < 7; i++){
-        if(line_inf[i] == 1)
-            return i;
-    }
-    return 0;
-}
+
+
+
+
+
+
+
+
+
+
+

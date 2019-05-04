@@ -14,13 +14,18 @@
 void tracking_init(void);
 void tracking_addr_init(void);
 void tracking_select(uint8_t addr);
-void track_inf_print(void);
 
-void car_trk_line(uint8_t dir, uint8_t wide);
-void trk_line_wide_select(uint8_t* line_inf, uint8_t wide, uint8_t* left, uint8_t* right);
-uint8_t find_black_pos(uint8_t* line_inf);
+void car_trk_line(uint8_t dir);
 
+void car_forward_back_trk_line(uint8_t dir);
 void car_left_trk_line(void);
-void car_go_n_line(uint8_t dir, uint8_t wide, uint8_t n);
+void car_right_trk_line(void);
+
+void car_go_n_line(uint8_t dir, uint8_t n);
+
+uint8_t find_black_line_center(uint8_t* line_inf);
+int8_t  compare_in_range(uint8_t a, uint8_t b);
+
+void track_inf_print(void);
 
 #endif /* _TRACKING_H_ */

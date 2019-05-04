@@ -46,11 +46,20 @@ int main()
     IntMasterEnable();
     
     waitKey();
+    car_go_n_line(CAR_FORWARD, 2);
+    delay_ms(1000);
+    car_go_n_line(CAR_RIGHT, 1);
+    delay_ms(1000);
+    car_go_n_line(CAR_BACK, 2);
+    delay_ms(1000);
+    car_go_n_line(CAR_LEFT, 1);
     while(1)
     {
-        car_trk_line(CAR_BACK, 0);
+        //printf("%d\n",find_black_pos(left));
+        //car_trk_line(CAR_FORWARD, 0);
         //car_left_trk_line();
         //track_inf_print();
+        //car_left_trk_line();
         delay_ms(10);
     }
 }
