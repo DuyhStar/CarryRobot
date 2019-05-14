@@ -11,23 +11,11 @@
 #define CAR_LEFT_ROTATE     4
 #define CAR_RIGHT_ROTATE    5
 
-#define CAR_FORWARD_LEFT    6
-#define CAR_FORWARD_RIGHT   7
-#define CAR_BACK_LEFT       8
-#define CAR_BACK_RIGHT      9
-#define CAR_LEFT_LEFT       10
-#define CAR_LEFT_RIGHT      11
-#define CAR_RIGHT_LEFT      12
-#define CAR_RIGHT_RIGHT     13
-
-#define  ALL_WHEEL_SPEED    50
-
 void car_ctrl_init(void);
 
-void car_sport(int16_t speed_x, int16_t speed_y, int16_t speed_rotate);
+void car_sport(int16_t vx, int16_t vy, int16_t wv);
 void car_move(uint8_t dir);
 void car_rotate(uint8_t dir);
-void car_turn(uint8_t dir, uint8_t range);
 
 void car_stop(void);
 

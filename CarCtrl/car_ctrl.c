@@ -1,10 +1,9 @@
 #include "car_ctrl.h"
 #include <stdio.h>
 
-uint16_t w1_speed = ALL_WHEEL_SPEED;
-uint16_t w2_speed = ALL_WHEEL_SPEED;
-uint16_t w3_speed = ALL_WHEEL_SPEED;
-uint16_t w4_speed = ALL_WHEEL_SPEED;
+int16_t vx = 70;
+int16_t vy = 70;
+int16_t wv = 70;
 
 //1. PA5, PA6
 //2. PA7, PD2
@@ -38,11 +37,12 @@ void car_ctrl_init(void)
     car_stop();
 }
 
-//vx: 前后移动速度，向前为正。(-99,-1)&&(1,99)
-//vy: 左右移动速度，向左为正。(-99,-1)&&(1,99)
-//wv: 旋转速度，  逆时针为正。(-99,-1)&&(1,99)
+//vx: 前后移动速度，向前为正。
+//vy: 左右移动速度，向左为正。
+//wv: 旋转速度，  逆时针为正。
 void car_sport(int16_t vx, int16_t vy, int16_t wv)
 {
+    printf("vx:%d vy:%d wv:%d\n", vx, vy, wv);
     int16_t v1, v2, v3, v4;
     int16_t k = 1;          //k = abs(Xn) + abs(Yn)
     v1 = vx - vy - k*wv;
@@ -50,7 +50,7 @@ void car_sport(int16_t vx, int16_t vy, int16_t wv)
     v3 = vx - vy + k*wv;
     v4 = vx + vy + k*wv;
     
-    bool dir1,dir2,dir3,dir4;
+    bool dir1, dir2, dir3, dir4;
     dir1 = v1 > 0? 0:1;
     dir2 = v2 > 0? 0:1;
     dir3 = v3 > 0? 0:1;
@@ -68,62 +68,18 @@ void car_move(uint8_t dir)
 {
     switch(dir)
     {
-        case CAR_FORWARD:   car_wheel_dir_set(0, 0, 0, 0);  break;
-        case CAR_BACK:      car_wheel_dir_set(1, 1, 1, 1);  break;
-        case CAR_LEFT:      car_wheel_dir_set(1, 0, 1, 0);  break;
-        case CAR_RIGHT:     car_wheel_dir_set(0, 1, 0, 1);  break;
+        case CAR_FORWARD: car_sport( vx,   0, 0); break;
+        case CAR_BACK:    car_sport(-vx,   0, 0); break;
+        case CAR_LEFT:    car_sport(  0,  vy, 0); break;
+        case CAR_RIGHT:   car_sport(  0, -vy, 0); break;
     }
-    car_wheel_speed_set(w1_speed, w2_speed, w3_speed, w4_speed);
 }
 void car_rotate(uint8_t dir)
 {
     switch(dir)
     {
-        case CAR_LEFT_ROTATE:   car_wheel_dir_set(1, 1, 0, 0);  break;
-        case CAR_RIGHT_ROTATE:  car_wheel_dir_set(0, 0, 1, 1);  break;
-    }
-    car_wheel_speed_set(w1_speed, w2_speed, w3_speed, w4_speed);
-}
-
-void car_turn(uint8_t dir, uint8_t range)
-{
-    switch(dir)
-    {
-        case (CAR_FORWARD_LEFT):
-            car_wheel_dir_set(0, 0, 0, 0);  
-            car_wheel_speed_set(w1_speed+range, w2_speed+range, w3_speed-range, w4_speed-range);
-            break;
-        case (CAR_FORWARD_RIGHT):
-            car_wheel_dir_set(0, 0, 0, 0);
-            car_wheel_speed_set(w1_speed-range, w2_speed-range, w3_speed+range, w4_speed+range);
-            break;
-        
-        case (CAR_BACK_LEFT):
-            car_wheel_dir_set(1, 1, 1, 1);  
-            car_wheel_speed_set(w1_speed-range, w2_speed-range, w3_speed+range, w4_speed+range);
-            break;
-        case (CAR_BACK_RIGHT):
-            car_wheel_dir_set(1, 1, 1, 1); 
-            car_wheel_speed_set(w1_speed+range, w2_speed+range, w3_speed-range, w4_speed-range);
-            break;
-        
-        case (CAR_LEFT_LEFT):
-            car_wheel_dir_set(1, 0, 0, 1);
-            car_wheel_speed_set(w1_speed-range, w2_speed+range, w3_speed-range, w4_speed+range);
-            break;
-        case (CAR_LEFT_RIGHT):
-            car_wheel_dir_set(1, 0, 0, 1);
-            car_wheel_speed_set(w1_speed+range, w2_speed-range, w3_speed+range, w4_speed-range);
-            break;
-        
-        case (CAR_RIGHT_LEFT):
-            car_wheel_dir_set(0, 1, 1, 0);
-            car_wheel_speed_set(w1_speed+range, w2_speed-range, w3_speed+range, w4_speed-range);
-            break;
-        case (CAR_RIGHT_RIGHT):
-            car_wheel_dir_set(0, 1, 1, 0);
-            car_wheel_speed_set(w1_speed-range, w2_speed+range, w3_speed-range, w4_speed+range);
-            break;
+        case CAR_LEFT_ROTATE:  car_sport( 0, 0,  wv); break;
+        case CAR_RIGHT_ROTATE: car_sport( 0, 0, -wv); break;
     }
 }
 
