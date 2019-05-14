@@ -25,10 +25,6 @@ void    tracking_select(uint8_t addr);
 
 void    car_trk_line(uint8_t dir);
 
-void    car_forward_back_trk_line(uint8_t dir);
-void    car_left_trk_line(void);
-void    car_right_trk_line(void);
-
 void    car_ready_move(void);
 void    car_move_to(uint8_t tar_x, uint8_t tar_y, uint8_t pre);
 void    car_x_move(int8_t err);
@@ -42,7 +38,6 @@ void    car_rotate_n_90_degree(uint8_t dir, uint16_t n);
 void    car_set_point_dir(uint8_t dir);
 
 uint8_t find_black_line_center(uint8_t* line_inf);
-int8_t  compare_in_range(uint8_t a, uint8_t b);
 
 void    track_inf_print(void);
 

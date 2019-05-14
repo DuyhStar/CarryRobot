@@ -79,139 +79,49 @@ void track_inf_print(void)
 
 void car_trk_line(uint8_t dir)
 {
-    switch(dir){
-        case CAR_FORWARD:
-        case CAR_BACK: 
-            car_forward_back_trk_line(dir); 
-            break;
-        case CAR_LEFT: 
-            car_left_trk_line();
-            break;
-        case CAR_RIGHT: 
-            car_right_trk_line(); 
-            break;
-    }
-}
-
-void car_forward_back_trk_line(uint8_t dir)
-{
-    extern uint8_t forward[8],back[8],left[8],right[8];
+    extern uint8_t forward[8], back[8], left[8], right[8];
+    extern int16_t vx,vy;
     uint8_t* line_inf;
-    
+
     switch(dir){
         case CAR_FORWARD: line_inf = forward; break;
         case CAR_BACK:    line_inf = back;    break;
+        case CAR_LEFT:    line_inf = left;    break;
+        case CAR_RIGHT:   line_inf = right;   break;
     }
-    
-    uint8_t center = find_black_line_center(line_inf);
-    
-    uint8_t range = 2;
-    if(center >= 6+range){
-        car_rotate(CAR_RIGHT_ROTATE);
-    }
-    else if(center <= 6-range){
-        car_rotate(CAR_LEFT_ROTATE);
-    }
-    else{
-        car_move(dir);
-    }
-}
-void car_left_trk_line(void)
-{
-    extern uint8_t left[8], right[8];
-    
-    uint8_t left_center  = find_black_line_center(left);
-    uint8_t right_center = (12-find_black_line_center(right));
-    
-    if(compare_in_range(left_center, right_center) > 0){
-        car_rotate(CAR_RIGHT_ROTATE);
-    }
-    else if(compare_in_range(left_center, right_center) < 0){
-        car_rotate(CAR_LEFT_ROTATE);
-    }
-    else{
-        uint8_t range = 2;
-        if(left_center >= 6+range){
-            car_move(CAR_FORWARD);
-        }
-        else if(left_center <= 6-range){
-            car_move(CAR_BACK);
-        }
-        else{
-            car_move(CAR_LEFT);
-        }
-    }
-}
-void car_right_trk_line(void)
-{
-    extern uint8_t left[8], right[8];
-    
-    uint8_t left_center  = (12-find_black_line_center(left));
-    uint8_t right_center = find_black_line_center(right);
-    
-    if(compare_in_range(left_center, right_center) > 0){
-        car_rotate(CAR_LEFT_ROTATE);
-    }
-    else if(compare_in_range(left_center, right_center) < 0){
-        car_rotate(CAR_RIGHT_ROTATE);
-    }
-    else{
-        uint8_t range = 2;
-        if(right_center >= 6+range){
-            car_move(CAR_BACK);
-        }
-        else if(right_center <= 6-range){
-            car_move(CAR_FORWARD);
-        }
-        else{
-            car_move(CAR_RIGHT);
-        }
-    }
-}
 
-int8_t compare_in_range(uint8_t a, uint8_t b)
-{
-    uint8_t range = 1;
-    uint8_t a_min = a-range, a_max = a+range;
-    uint8_t b_min = b-range, b_max = b+range;
-    
-    if(a < b){
-        if(a_max < b_min){
-            return -1;
-        }
-        else{
-            return 0;
-        }
+    uint8_t center = find_black_line_center(line_inf);
+
+    //PID: p_w1:前后循迹的旋转，p_w2:左右循迹的旋转，p_vx:左右循迹的平移
+    int16_t p_wv_fb = -5, p_wv_lr = -4, p_vx_l = 5, p_vx_r = -5;
+    int16_t err = center - 6;
+    switch(dir){
+        case CAR_FORWARD: car_sport(         vx,   0, p_wv_fb*err); break;
+        case CAR_BACK:    car_sport(        -vx,   0, p_wv_fb*err); break;
+        case CAR_LEFT:    car_sport( p_vx_l*err,  vy, p_wv_lr*err); break;
+        case CAR_RIGHT:   car_sport( p_vx_r*err, -vy, p_wv_lr*err); break;
     }
-    else if(a > b){
-        if(a_min > b_max){
-            return 1;
-        }
-        else{
-            return 0;
-        }
-    }
-    else{
-    }
-    return 0;
 }
 
 void car_go_n_line(uint8_t dir, uint8_t n)
 {
     extern uint8_t forward[8], back[8], left[8], right[8];
     uint8_t *count_line, line_center[4] = {12,10,8};
+    
     switch(dir){
         case CAR_FORWARD: count_line = left;    break;
         case CAR_BACK:    count_line = right;   break;
         case CAR_LEFT:    count_line = back;    break;
         case CAR_RIGHT:   count_line = forward; break;
     }
+    
     while(count_line[6]){
         car_move(dir);
     }
     uint8_t count = 0, i = 0, center;
     while(1){
         car_trk_line(dir);
+        //计数
         center = find_black_line_center(count_line);
         if((center == line_center[i]) || (center == line_center[i]-1)){
             i++;
@@ -269,11 +179,9 @@ void update_XY(uint8_t dir)
 
 void car_adjust_to_center(void)
 {
-    extern uint16_t w1_speed,w2_speed,w3_speed,w4_speed;
     extern uint8_t forward[8], back[8], left[8], right[8];
     uint8_t center_f, center_b, center_l, center_r;
     
-    w1_speed = w2_speed = w3_speed = w4_speed = 20;
     //调节100次
     for(uint8_t i = 0; i < 100; i++){
         //调整前后方向
@@ -324,8 +232,7 @@ void car_adjust_to_center(void)
                 }
             }
         }
-    }
-    w1_speed = w2_speed = w3_speed = w4_speed = ALL_WHEEL_SPEED;   
+    }   
 }
 
 void car_rotate_90_degree(uint8_t dir)
@@ -378,6 +285,12 @@ void car_rotate_90_degree(uint8_t dir)
     car_point_dir = car_point[p];
 }
 
+void car_rotate_n_90_degree(uint8_t dir, uint16_t n)
+{
+    for(uint8_t i = 0; i < n; i++)
+        car_rotate_90_degree(dir);
+}
+
 void car_set_point_dir(uint8_t dir)
 {
     switch(dir){
@@ -414,12 +327,6 @@ void car_set_point_dir(uint8_t dir)
             }
             break;
     }
-}
-
-void car_rotate_n_90_degree(uint8_t dir, uint16_t n)
-{
-    for(uint8_t i = 0; i < n; i++)
-        car_rotate_90_degree(dir);
 }
 
 void car_move_to(uint8_t tar_x, uint8_t tar_y, uint8_t pre)
@@ -514,21 +421,6 @@ uint8_t find_black_line_center(uint8_t* line_inf)
     uint8_t center = begin*2 + end - begin;
     return center;
 }
-
-void car_go_no_line_no_trk(uint8_t dir, uint8_t n)
-{
-    car_move(dir);
-    
-}
-
-
-
-
-
-
-
-
-
 
 
 
