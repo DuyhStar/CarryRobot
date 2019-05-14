@@ -20,8 +20,11 @@
 #define CAR_RIGHT_LEFT      12
 #define CAR_RIGHT_RIGHT     13
 
+#define  ALL_WHEEL_SPEED    50
+
 void car_ctrl_init(void);
 
+void car_sport(int16_t speed_x, int16_t speed_y, int16_t speed_rotate);
 void car_move(uint8_t dir);
 void car_rotate(uint8_t dir);
 void car_turn(uint8_t dir, uint8_t range);
