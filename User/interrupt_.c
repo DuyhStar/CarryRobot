@@ -15,15 +15,6 @@ void Timer0_IntHandler(void)
 void Timer1_IntHandler(void)
 {
     TimerIntClear(TIMER1_BASE, TIMER_TIMA_TIMEOUT);
-    static uint16_t addr = 0;
-    addr++;
-    switch(addr)
-    {
-        case 1: tracking_select(addr);           break;
-        case 2: tracking_select(addr);           break;
-        case 3: tracking_select(addr);           break;
-        case 4: tracking_select(addr); addr = 0; break;
-    }
 }
 //void PORTF_IntHandler(void)
 //{
