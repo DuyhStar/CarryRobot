@@ -92,8 +92,8 @@ void car_trk_line(uint8_t dir)
 
     uint8_t center = find_black_line_center(line_inf);
 
-    //PID: p_w1:前后循迹的旋转，p_w2:左右循迹的旋转，p_vx:左右循迹的平移
-    int16_t p_wv_fb = -5, p_wv_lr = -4, p_vx_l = 5, p_vx_r = -5;
+    //PID: p_wv_fb:前后循迹的旋转，p_wv_lr:左右循迹的旋转，p_vx_l,p_vx_r:左右循迹的平移
+    int16_t p_wv_fb = -5, p_wv_lr = -2, p_vx_l = 9, p_vx_r = -9;
     int16_t err = center - 6;
     switch(dir){
         case CAR_FORWARD: car_sport(         vx,   0, p_wv_fb*err); break;
@@ -106,27 +106,31 @@ void car_trk_line(uint8_t dir)
 void car_go_n_line(uint8_t dir, uint8_t n)
 {
     extern uint8_t forward[8], back[8], left[8], right[8];
-    uint8_t *count_line, line_center[4] = {12,10,8};
+    uint8_t *count_line_l, *count_line_r, line_center[8] = {12,11,10,9,8,7,6,5};
     
     switch(dir){
-        case CAR_FORWARD: count_line = left;    break;
-        case CAR_BACK:    count_line = right;   break;
-        case CAR_LEFT:    count_line = back;    break;
-        case CAR_RIGHT:   count_line = forward; break;
+        case CAR_FORWARD: count_line_l = left;    count_line_r = right;   break;
+        case CAR_BACK:    count_line_l = right;   count_line_r = left;    break;
+        case CAR_LEFT:    count_line_l = back;    count_line_r = forward; break;
+        case CAR_RIGHT:   count_line_l = forward; count_line_r = back;    break;
     }
     
-    while(count_line[6]){
+    while(count_line_l[6]){
         car_move(dir);
+        ;
     }
-    uint8_t count = 0, i = 0, center;
+    
+    uint8_t count = 0, i = 0, center_l, center_r;
     while(1){
         car_trk_line(dir);
         //计数
-        center = find_black_line_center(count_line);
-        if((center == line_center[i]) || (center == line_center[i]-1)){
-            i++;
+        center_l = find_black_line_center(count_line_l);
+        center_r = 12 - find_black_line_center(count_line_r);
+
+        if(center_l == line_center[i] || center_l == line_center[i+1] || center_l == line_center[i+2]){
+            i += 2;
         }
-        if(i == 3){
+        if(i == 6){
             i = 0;
             count++;
             update_XY(dir);
@@ -182,57 +186,62 @@ void car_adjust_to_center(void)
     extern uint8_t forward[8], back[8], left[8], right[8];
     uint8_t center_f, center_b, center_l, center_r;
     
-    //调节100次
-    for(uint8_t i = 0; i < 100; i++){
-        //调整前后方向
-        while(1){
-            center_f = find_black_line_center(forward);
-            center_b = 12 - find_black_line_center(back);
-            
-            if( (center_f == center_b) && (center_f == 6) ){
-                car_stop();
-                break;
-            }
+    extern int16_t vx, vy, wv;
+    int16_t tvx = vx, tvy = vy, twv = wv;
+    vx = 20;
+    vy = 20;
+    wv = 20;
+    //调整前后方向
+    while(1){
+        center_f = find_black_line_center(forward);
+        center_b = 12 - find_black_line_center(back);
+        
+        if( (center_f == center_b) && (center_f == 6) ){
+            car_stop();
+            break;
+        }
+        else{
+            if(center_f > center_b)
+                car_rotate(CAR_RIGHT_ROTATE);
+            else if(center_f < center_b)
+                car_rotate(CAR_LEFT_ROTATE);
             else{
-                if(center_f > center_b)
-                    car_rotate(CAR_RIGHT_ROTATE);
-                else if(center_f < center_b)
-                    car_rotate(CAR_LEFT_ROTATE);
-                else{
-                    if(center_f > 6)
-                        car_move(CAR_RIGHT);
-                    else if(center_f < 6)
-                        car_move(CAR_LEFT);
-                    else
-                        ;
-                }
+                if(center_f > 6)
+                    car_move(CAR_RIGHT);
+                else if(center_f < 6)
+                    car_move(CAR_LEFT);
+                else
+                    ;
             }
         }
-        //调整左右方向
-        while(1){
-            center_l = find_black_line_center(left);
-            center_r = 12 - find_black_line_center(right);
-            
-            if( (center_l == center_r) && (center_l == 6) ){
-                car_stop();
-                break;
-            }
+    }
+    //调整左右方向
+    while(1){
+        center_l = find_black_line_center(left);
+        center_r = 12 - find_black_line_center(right);
+        
+        if( (center_l == center_r) && (center_l == 6) ){
+            car_stop();
+            break;
+        }
+        else{
+            if(center_l > center_r)
+                car_rotate(CAR_RIGHT_ROTATE);
+            else if(center_l < center_r)
+                car_rotate(CAR_LEFT_ROTATE);
             else{
-                if(center_l > center_r)
-                    car_rotate(CAR_RIGHT_ROTATE);
-                else if(center_l < center_r)
-                    car_rotate(CAR_LEFT_ROTATE);
-                else{
-                    if(center_l > 6)
-                        car_move(CAR_FORWARD);
-                    else if(center_l < 6)
-                        car_move(CAR_BACK);
-                    else
-                        ;
-                }
+                if(center_l > 6)
+                    car_move(CAR_FORWARD);
+                else if(center_l < 6)
+                    car_move(CAR_BACK);
+                else
+                    ;
             }
         }
-    }   
+    }
+    vx = tvx;
+    vy = tvy;
+    wv = twv;
 }
 
 void car_rotate_90_degree(uint8_t dir)
@@ -393,7 +402,7 @@ void car_ready_move(void)
     extern int8_t Y;
     
     car_move(CAR_LEFT);
-    while(!back[3])
+    while(!(back[3]||back[4]||back[5]))
         ;
     Y++;
     car_go_n_line(CAR_FORWARD, 1);
@@ -401,6 +410,17 @@ void car_ready_move(void)
 
 uint8_t find_black_line_center(uint8_t* line_inf)
 {
+    //如果没有找到黑线，认为黑线在中间
+    bool no_black = 1;
+    for(uint8_t i = 0; i <= 6; i++){
+        if(line_inf[i] == 1){
+            no_black = 0;
+            break;
+        }
+    }
+    if(no_black == 1)
+        return 6;
+    
     uint8_t begin = 0, end = 0;
     for(uint8_t i = 0; i <= 6; i++){
         if(line_inf[i] == 1){
@@ -414,11 +434,8 @@ uint8_t find_black_line_center(uint8_t* line_inf)
             break;
         }
     }
-    //如果没有找到黑线，认为黑线在中间
-    if(begin == 0 && end == 0)
-        return 6;
     
-    uint8_t center = begin*2 + end - begin;
+    uint8_t center = begin + end;
     return center;
 }
 

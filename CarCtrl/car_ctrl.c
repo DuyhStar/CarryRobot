@@ -1,9 +1,9 @@
 #include "car_ctrl.h"
 #include <stdio.h>
 
-int16_t vx = 70;
-int16_t vy = 70;
-int16_t wv = 70;
+int16_t vx = 60;
+int16_t vy = 60;
+int16_t wv = 60;
 
 //1. PA5, PA6
 //2. PA7, PD2
@@ -42,7 +42,6 @@ void car_ctrl_init(void)
 //wv: 旋转速度，  逆时针为正。
 void car_sport(int16_t vx, int16_t vy, int16_t wv)
 {
-    printf("vx:%d vy:%d wv:%d\n", vx, vy, wv);
     int16_t v1, v2, v3, v4;
     int16_t k = 1;          //k = abs(Xn) + abs(Yn)
     v1 = vx - vy - k*wv;
