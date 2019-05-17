@@ -8,6 +8,9 @@ void servo_ctrl_init(uint16_t* pos);
 void servo_position_set(uint8_t ID,uint16_t position);
 void servo_speed_set(uint8_t ID,uint16_t speed);
 void servo_position_get(uint8_t ID, uint16_t* pos);
+void zhua_zi_set(uint16_t us);
+
+
 
 #endif /* _SERVO_H_ */
 

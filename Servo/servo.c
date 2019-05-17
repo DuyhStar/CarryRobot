@@ -2,7 +2,7 @@
 
 void servo_ctrl_init(uint16_t* pos)
 {
-    //PWM0_67_init();
+    PWM0_67_init();
     UART2_Init(115200);
     servo_speed_set(0,200);
 	servo_speed_set(1,200);
@@ -12,7 +12,12 @@ void servo_ctrl_init(uint16_t* pos)
     servo_position_set(1,pos[1]);
     servo_position_set(2,pos[2]);
     servo_position_set(3,pos[3]);
-    
+}
+void zhua_zi_set(uint16_t us)
+{
+    uint32_t pulse = PWMGenPeriodGet(PWM0_BASE, PWM_GEN_3);
+    pulse = pulse*us/20000;
+    PWMPulseWidthSet(PWM0_BASE, PWM_OUT_7, pulse);
 }
 
 static void UARTSend(uint32_t ui32UARTBase, const uint8_t *pui8Buffer, uint32_t ui32Count)

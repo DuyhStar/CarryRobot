@@ -20,6 +20,7 @@
 #include "qr_code.h"
 #include "timer_config.h"
 #include "key.h"
+#include "arm.h"
 
 int8_t  X = 0, Y = 0;
 uint8_t work_x     = 4, work_y     = 7;
@@ -28,7 +29,7 @@ uint8_t material_x = 4, material_y = 1;
 uint8_t code_x     = 6, code_y     = 1;
 
 uint8_t  forward[8], back[8], left[8], right[8];
-uint16_t servo_angle[] = {480, 758, 789, 241};
+uint16_t servo_angle[] = {480, 202, 184, 774};
 uint8_t  task1[3] = {1, 2, 3}, task2[3] = {1, 2, 3};    //从二维码中读取的任务信息(1:红. 2:绿. 3:蓝.)
 uint8_t  color[3] = {1, 2, 3};                          //物块摆放的颜色顺序
 
@@ -42,8 +43,8 @@ int main()
     UART0_init(115200);
     key0_init();
     car_ctrl_init();
-//    servo_ctrl_init(servo_angle);
-//    delay_s(2);
+    servo_ctrl_init(servo_angle);
+    delay_s(2);
     tracking_init();
     
     printf("All Ready\n");
@@ -53,51 +54,66 @@ int main()
     /*************************************/
     //功能测试
     //implement
-//    waitKey();
-//    car_ready_move();
-//    car_move_to(4, 7, X_PRE);
-//    car_move_to(1, 1,Y_PRE);    
+//    zhua_zi_set(1300);   
 //    while(1)
 //    {}
     /*************************************/
-    
     waitKey();
     car_ready_move();
-
-    car_move_to(code_x, code_y, X_PRE);//读取加工顺序
+    car_move_to(code_x, code_y, X_PRE);//走到二维码区
+    //
+    //读取二维码
+    //
     delay_ms(1000);
     
+    //
+    //走到原料区，摄像头读取颜色顺序
+    //
+    
     for(uint8_t i = 0; i < 3; i++){
+        //走到原料区
         car_move_to(material_x, material_y, X_PRE);
         car_adjust_to_center();
+        
         //从原料区夹取物块
+        take_from_material(i);
         delay_ms(1000);
         
-        car_move_to(work_x, work_y, Y_PRE);
+        //走到加工区
+        car_move_to(work_x + task1[i] - 2, work_y, X_PRE); 
         car_adjust_to_center();
         
         //放下物块到加工区
+        place_to_work(i);
         delay_ms(1000);
     }
     
     car_move_to(code_x, code_y, Y_PRE);//读取成品搬运顺序
 
     for(uint8_t i = 0; i < 3; i++){
-        car_move_to(4, 4, X_PRE);
+        //走到中转点
+        car_move_to(2 + task2[i], 2 + task2[i], X_PRE);
         car_set_point_dir(CAR_POINT_RIGHT);
         
-        car_move_to(work_x, work_y, Y_PRE);
+        //走到加工区
+        car_move_to(work_x + task2[i] -2, work_y, X_PRE);
         car_adjust_to_center();
         
         //从加工区夹取物块
+        take_from_work(i);
+        delay_ms(1000);
         
-        car_move_to(4, 4, Y_PRE);
+        //走到中转点
+        car_move_to(2 + task2[i], 2 + task2[i], X_PRE);
         car_set_point_dir(CAR_POINT_FORWARD);
         
-        car_move_to(product_x, product_y, Y_PRE);
+        //走到成品区
+        car_move_to(product_x, 2 + task2[i], X_PRE);
         car_adjust_to_center();
         
-        //放下物块到成品区 
+        //放下物块到成品区
+        place_to_product(i);
+        delay_ms(1000);
     }
     
     car_move_to(1, 1, X_PRE);
