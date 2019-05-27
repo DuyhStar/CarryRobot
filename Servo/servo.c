@@ -1,17 +1,23 @@
 #include "servo.h"
+#include "delay.h"
+#include "arm.h"
 
 void servo_ctrl_init(uint16_t* pos)
 {
-    PWM0_67_init();
     UART2_Init(115200);
-    servo_speed_set(0,200);
-	servo_speed_set(1,200);
-	servo_speed_set(2,200);
-	servo_speed_set(3,200);
-    servo_position_set(0,pos[0]);
-    servo_position_set(1,pos[1]);
-    servo_position_set(2,pos[2]);
-    servo_position_set(3,pos[3]);
+    delay_ms(50);
+    for(uint8_t i = 0; i < 6; i++){
+        servo_speed_set(0,300);
+        servo_speed_set(1,300);
+        servo_speed_set(2,300);
+        servo_speed_set(3,300);
+    }
+    servo_position_set(0,pos[0], 0);
+    servo_position_set(1,pos[1], 0);
+    servo_position_set(2,pos[2], 0);
+    servo_position_set(3,pos[3], 0);
+    PWM0_67_init();
+    fang();
 }
 void zhua_zi_set(uint16_t us)
 {
@@ -27,7 +33,7 @@ static void UARTSend(uint32_t ui32UARTBase, const uint8_t *pui8Buffer, uint32_t 
 }
 
 //0-1023
-void servo_position_set(uint8_t ID,uint16_t position)
+void servo_position_set(uint8_t ID,uint16_t position, bool wait_if)
 {	
 	uint8_t buff[9];
 	buff[0] = 0xff;
@@ -41,8 +47,33 @@ void servo_position_set(uint8_t ID,uint16_t position)
 	buff[8] = ~(uint8_t)(buff[2]+buff[3]+buff[4]+buff[5]+buff[6]+buff[7]);
 	
 	UARTSend(UART2_BASE,buff,9);
-	for(uint32_t ui32Loop = 0; ui32Loop < 2000000; ui32Loop++)
-        ;
+    delay_ms(100);
+    
+    if(wait_if == true){
+        uint16_t pos, count1 = 0, count2 = 0;
+        while(1){
+            servo_position_get(ID, &pos);
+            if(pos == 0){
+                delay_ms(100);
+                count1++;
+                if(count1 == 20){
+                    break;
+                }
+                continue;
+            }
+            int16_t err = position - pos;
+            if(err < 10 && err > -10){
+                break;
+            }
+            else{
+                count2++;
+                if(count2 == 30){
+                    break;
+                }
+                delay_ms(100);
+            }
+        }
+    }
 }
 
 void servo_speed_set(uint8_t ID,uint16_t speed)
@@ -59,13 +90,15 @@ void servo_speed_set(uint8_t ID,uint16_t speed)
 	buff[8] = ~(uint8_t)(buff[2]+buff[3]+buff[4]+buff[5]+buff[6]+buff[7]);
 	
 	UARTSend(UART2_BASE,buff,9);
-	for(uint32_t ui32Loop = 0; ui32Loop < 2000000; ui32Loop++)
-        ;
+    delay_ms(50);
 }
 
 
 void servo_position_get(uint8_t ID, uint16_t* pos)
 {
+    while(UARTCharsAvail(UART2_BASE)){
+        UARTCharGet(UART2_BASE);
+    }
 	uint8_t buff[8];
 	buff[0] = 0xff;
 	buff[1] = 0xff;

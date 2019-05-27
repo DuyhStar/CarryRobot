@@ -15,6 +15,12 @@ void Timer0_IntHandler(void)
 void Timer1_IntHandler(void)
 {
     TimerIntClear(TIMER1_BASE, TIMER_TIMA_TIMEOUT);
+    
+    extern bool trk_cnt_flag;
+    trk_cnt_flag = 1;
+//    TimerConfigure(TIMER0_BASE, TIMER_CFG_PERIODIC);//使用全宽32位定时器周期计数模式
+//    TimerLoadSet(TIMER0_BASE, TIMER_BOTH, 450*(SysCtlClockGet()/1000));
+    TimerDisable(TIMER1_BASE, TIMER_BOTH);
 }
 //void PORTF_IntHandler(void)
 //{

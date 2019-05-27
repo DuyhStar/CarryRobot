@@ -31,5 +31,5 @@ void timer1_init(uint32_t ms)
     IntEnable(INT_TIMER1A);
     TimerIntEnable(TIMER1_BASE, TIMER_TIMA_TIMEOUT);
 
-    TimerEnable(TIMER1_BASE, TIMER_BOTH);
+    TimerDisable(TIMER1_BASE, TIMER_BOTH);
 }

@@ -6,7 +6,7 @@
 #include "delay.h"
 
 uint8_t  track_addr = 1;
-
+bool     trk_cnt_flag = 1;
 uint8_t  car_point_dir = CAR_POINT_RIGHT;
 
 void tracking_init(void)
@@ -14,8 +14,8 @@ void tracking_init(void)
     UART1_Init(9600);
     tracking_addr_init();
     tracking_select(track_addr); 
-    timer0_init(10);        //触发循迹模块采集
-    //timer1_init(23);        //切换循迹模块
+    timer0_init(8);             //触发循迹模块采集
+    timer1_init(450);           //计数开关控制模块
 }
 
 void tracking_addr_init(void)
@@ -92,14 +92,14 @@ void car_trk_line(uint8_t dir)
 
     uint8_t center = find_black_line_center(line_inf);
 
-    //PID: p_wv_fb:前后循迹的旋转，p_wv_lr:左右循迹的旋转，p_vx_l,p_vx_r:左右循迹的平移
-    int16_t p_wv_fb = -5, p_wv_lr = -2, p_vx_l = 9, p_vx_r = -9;
+    //PID: p_wv_fb:前后循迹的旋转，p_wv_lr:左右循迹的旋转，p_vx_lr,:左右循迹的平移
+    int16_t p_wv_fb = -4, p_wv_lr = -5, p_vx_lr = 6;
     int16_t err = center - 6;
     switch(dir){
         case CAR_FORWARD: car_sport(         vx,   0, p_wv_fb*err); break;
         case CAR_BACK:    car_sport(        -vx,   0, p_wv_fb*err); break;
-        case CAR_LEFT:    car_sport( p_vx_l*err,  vy, p_wv_lr*err); break;
-        case CAR_RIGHT:   car_sport( p_vx_r*err, -vy, p_wv_lr*err); break;
+        case CAR_LEFT:    car_sport( p_vx_lr*err,  vy, p_wv_lr*err); break;
+        case CAR_RIGHT:   car_sport( -p_vx_lr*err, -vy, p_wv_lr*err); break;
     }
 }
 
@@ -115,30 +115,55 @@ void car_go_n_line(uint8_t dir, uint8_t n)
         case CAR_RIGHT:   count_line_l = forward; count_line_r = back;    break;
     }
     
-    while(count_line_l[6]){
-        car_move(dir);
-        ;
+    {
+        uint8_t i = 0;
+        while(1){
+            car_trk_line(dir);
+            i++;
+            delay_ms(50);
+            if(i == 6)
+                break;
+        }
     }
     
-    uint8_t count = 0, i = 0, center_l, center_r;
-    while(1){
+    extern int16_t vx, vy, wv;
+    uint8_t count = 0;
+    int16_t tvx = vx, tvy = vy, twv = wv;
+    if(n == 1){
+        vx = 50;
+        vy = 50;
+        wv = 50;
+    }
+    trk_cnt_flag = 1;
+    while(n!=1){
         car_trk_line(dir);
-        //计数
-        center_l = find_black_line_center(count_line_l);
-        center_r = 12 - find_black_line_center(count_line_r);
-
-        if(center_l == line_center[i] || center_l == line_center[i+1] || center_l == line_center[i+2]){
-            i += 2;
-        }
-        if(i == 6){
-            i = 0;
-            count++;
-            update_XY(dir);
-        }
-        if(count == n){
-            break;
+        if(count_line_l[6] == 1){
+            if(trk_cnt_flag == 1){
+                update_XY(dir);
+                count++;
+                trk_cnt_flag = 0;
+                TimerEnable(TIMER1_BASE, TIMER_BOTH);
+            }
+            if(count == n-1){
+                vx = 50;
+                vy = 50;
+                wv = 50;
+                break;
+            }
         }
     }
+    while(1){
+        car_trk_line(dir);
+        if(count_line_l[4] == 1){
+            if(trk_cnt_flag == 1){
+                update_XY(dir);
+                break;
+            }
+        }
+    }
+    vx = tvx;
+    vy = tvy;
+    wv = twv;
     car_stop();
 }
 
@@ -192,50 +217,54 @@ void car_adjust_to_center(void)
     vy = 20;
     wv = 20;
     //调整前后方向
-    while(1){
-        center_f = find_black_line_center(forward);
-        center_b = 12 - find_black_line_center(back);
-        
-        if( (center_f == center_b) && (center_f == 6) ){
-            car_stop();
-            break;
-        }
-        else{
-            if(center_f > center_b)
-                car_rotate(CAR_RIGHT_ROTATE);
-            else if(center_f < center_b)
-                car_rotate(CAR_LEFT_ROTATE);
+    for(uint8_t i = 0; i < 5; i++){
+        while(1){
+            center_f = find_black_line_center(forward);
+            center_b = 12 - find_black_line_center(back);
+            
+            int8_t err = center_f - center_b; 
+            if( (err<=1&&err>=-1) && (center_f>=4&&center_f<=6) ){
+                car_stop();
+                break;
+            }
             else{
-                if(center_f > 6)
-                    car_move(CAR_RIGHT);
-                else if(center_f < 6)
-                    car_move(CAR_LEFT);
-                else
-                    ;
+                if(center_f > center_b)
+                    car_rotate(CAR_RIGHT_ROTATE);
+                else if(center_f < center_b)
+                    car_rotate(CAR_LEFT_ROTATE);
+                else{
+                    if(center_f > 6)
+                        car_move(CAR_RIGHT);
+                    else if(center_f < 6)
+                        car_move(CAR_LEFT);
+                    else
+                        ;
+                }
             }
         }
-    }
-    //调整左右方向
-    while(1){
-        center_l = find_black_line_center(left);
-        center_r = 12 - find_black_line_center(right);
-        
-        if( (center_l == center_r) && (center_l == 6) ){
-            car_stop();
-            break;
-        }
-        else{
-            if(center_l > center_r)
-                car_rotate(CAR_RIGHT_ROTATE);
-            else if(center_l < center_r)
-                car_rotate(CAR_LEFT_ROTATE);
+        //调整左右方向
+        while(1){
+            center_l = find_black_line_center(left);
+            center_r = 12 - find_black_line_center(right);
+            
+            int8_t err = center_l - center_r;
+            if( (err<=1&&err>=-1) && (center_l>=4&&center_l<=6) ){
+                car_stop();
+                break;
+            }
             else{
-                if(center_l > 6)
-                    car_move(CAR_FORWARD);
-                else if(center_l < 6)
-                    car_move(CAR_BACK);
-                else
-                    ;
+                if(center_l > center_r)
+                    car_rotate(CAR_RIGHT_ROTATE);
+                else if(center_l < center_r)
+                    car_rotate(CAR_LEFT_ROTATE);
+                else{
+                    if(center_l > 6)
+                        car_move(CAR_FORWARD);
+                    else if(center_l < 6)
+                        car_move(CAR_BACK);
+                    else
+                        ;
+                }
             }
         }
     }
@@ -250,6 +279,7 @@ void car_rotate_90_degree(uint8_t dir)
     
     car_adjust_to_center();
     car_rotate(dir);
+    delay_ms(300);
     if(dir == CAR_RIGHT_ROTATE){
         uint8_t i = 6;
         while(1){
@@ -345,10 +375,12 @@ void car_move_to(uint8_t tar_x, uint8_t tar_y, uint8_t pre)
     
     if(pre == X_PRE){
         car_x_move(err_x);
+        delay_ms(300);
         car_y_move(err_y);
     }
     else if(pre == Y_PRE){
         car_y_move(err_y);
+        delay_ms(300);
         car_x_move(err_x);
     }
 }
@@ -402,7 +434,7 @@ void car_ready_move(void)
     extern int8_t Y;
     
     car_move(CAR_LEFT);
-    while(!(back[3]||back[4]||back[5]))
+    while(!(back[4]||back[5]))
         ;
     Y++;
     car_go_n_line(CAR_FORWARD, 1);
