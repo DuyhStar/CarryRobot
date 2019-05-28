@@ -6,6 +6,18 @@
 #include "timer_config.h"
 #include "tracking.h"
 
+uint8_t compare(uint8_t *t, char* p)
+{
+    uint8_t s0 = 0,s1 = 0,s2 = 0;
+    s0 = (t[0]==(p[0]-48));
+    s1 = (t[1]==(p[1]-48));
+    s2 = (t[2]==(p[2]-48));
+    if(s0&&s1&&s2)
+        return 1;
+    else
+        return 0;
+}
+
 void Timer0_IntHandler(void)
 {
     TimerIntClear(TIMER0_BASE, TIMER_TIMA_TIMEOUT);
@@ -16,11 +28,10 @@ void Timer1_IntHandler(void)
 {
     TimerIntClear(TIMER1_BASE, TIMER_TIMA_TIMEOUT);
     
+    TimerDisable(TIMER1_BASE, TIMER_BOTH);
+    
     extern bool trk_cnt_flag;
     trk_cnt_flag = 1;
-//    TimerConfigure(TIMER0_BASE, TIMER_CFG_PERIODIC);//使用全宽32位定时器周期计数模式
-//    TimerLoadSet(TIMER0_BASE, TIMER_BOTH, 450*(SysCtlClockGet()/1000));
-    TimerDisable(TIMER1_BASE, TIMER_BOTH);
 }
 //void PORTF_IntHandler(void)
 //{
@@ -97,10 +108,29 @@ void IntHandler_UART3(void)
 {
     UARTIntClear(UART3_BASE, UARTIntStatus(UART3_BASE, true));
 
-    char c = 0;
+    uint8_t c = 0, i= 0, temp[3] = {4,4,4};
+    extern uint8_t color[3];
+    extern bool    color_get;
     while(UARTCharsAvail(UART3_BASE))
     {
         c = UARTCharGetNonBlocking(UART3_BASE);
+        if(i == 3)
+            break;
+        temp[i] = c;
+        i++;
+    }
+    uint8_t s0 = compare(temp,"123");
+    uint8_t s1 = compare(temp,"132");
+    uint8_t s2 = compare(temp,"213");
+    uint8_t s3 = compare(temp,"231");
+    uint8_t s4 = compare(temp,"321");
+    uint8_t s5 = compare(temp,"312");
+    if(s0 || s1 || s2 || s3 ||s4 || s5)
+    {
+        color[0] = temp[0];
+        color[1] = temp[1];
+        color[2] = temp[2];
+        color_get = 1;
     }
 }
 
@@ -109,12 +139,32 @@ void IntHandler_UART4(void)
 {
     UARTIntClear(UART4_BASE, UARTIntStatus(UART4_BASE, true));
 
-    char c = 0;
+    uint8_t c = 0, i= 0, temp[3] = {4,4,4};
     while(UARTCharsAvail(UART4_BASE))
     {
         c = UARTCharGetNonBlocking(UART4_BASE);
-        
-        
+        if(i == 3)
+            break;
+        temp[i] = c - 48;
+        i++;
+    }
+    uint8_t s0 = compare(temp,"123");
+    uint8_t s1 = compare(temp,"132");
+    uint8_t s2 = compare(temp,"213");
+    uint8_t s3 = compare(temp,"231");
+    uint8_t s4 = compare(temp,"321");
+    uint8_t s5 = compare(temp,"312");
+    if(s0 || s1 || s2 || s3 ||s4 || s5)
+    {
+        extern uint8_t task1[3], task2[3];
+        extern bool qr_code_get;
+        task1[0] = temp[0];
+        task1[1] = temp[1];
+        task1[2] = temp[2];
+        task2[0] = temp[0];
+        task2[1] = temp[1];
+        task2[2] = temp[2];
+        qr_code_get = 1;
     }
 }
 
@@ -131,13 +181,13 @@ void IntHandler_UART5(void)
 }
 
 //屏幕
-void IntHandler_UART7(void)
-{
-    UARTIntClear(UART7_BASE, UARTIntStatus(UART7_BASE, true));
+//void IntHandler_UART7(void)
+//{
+//    UARTIntClear(UART7_BASE, UARTIntStatus(UART7_BASE, true));
 
-    char c = 0;
-    while(UARTCharsAvail(UART7_BASE))
-    {
-        c = UARTCharGetNonBlocking(UART7_BASE);
-    }
-}
+//    char c = 0;
+//    while(UARTCharsAvail(UART7_BASE))
+//    {
+//        c = UARTCharGetNonBlocking(UART7_BASE);
+//    }
+//}

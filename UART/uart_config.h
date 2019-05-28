@@ -34,6 +34,6 @@ void UART5_Init(uint32_t Baud);
 void IntHandler_UART5(void);
 
 void UART7_Init(uint32_t Baud);
-void IntHandler_UART7(void);
+//void IntHandler_UART7(void);
 
 #endif /* _UART_CONFIG_H_ */

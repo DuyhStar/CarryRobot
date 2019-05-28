@@ -23,7 +23,7 @@ void UART0_init(uint32_t Baud)
 //------ rewrite fputc for printf funciton -----
 int fputc(int ch, FILE *f)
 {
-	UARTCharPut(UART0_BASE,(unsigned char)ch);
+	UARTCharPut(UART5_BASE,(unsigned char)ch);
 	return ch;
 }
 
@@ -152,7 +152,7 @@ void UART7_Init(uint32_t Baud)
 
     UARTConfigSetExpClk(UART7_BASE, SysCtlClockGet(), Baud, (UART_CONFIG_WLEN_8 | UART_CONFIG_STOP_ONE | UART_CONFIG_PAR_NONE));
 
-    UARTIntRegister(UART7_BASE, IntHandler_UART7);
-    UARTIntEnable(UART7_BASE, UART_INT_RX | UART_INT_RT);
-    IntEnable(INT_UART7);
+//    UARTIntRegister(UART7_BASE, IntHandler_UART7);
+//    UARTIntEnable(UART7_BASE, UART_INT_RX | UART_INT_RT);
+//    IntEnable(INT_UART7);
 }

@@ -32,42 +32,66 @@ uint8_t  forward[8], back[8], left[8], right[8];
 uint16_t servo_angle[] = {701, 202, 203, 774};
 uint8_t  task1[3] = {1, 2, 3}, task2[3] = {2, 3, 1};    //从二维码中读取的任务信息(1:红. 2:绿. 3:蓝.)
 uint8_t  color[3] = {1, 2, 3};                           //物块摆放的颜色顺序
+bool     qr_code_get = 0, color_get = 0;
 
 extern int16_t vx, vy, wv;
+
 void pruduct_area_adjust_pos(void);
 void work_area_adjust_pos(uint8_t pos);
 void interrupt_priority_set(void);
-int main()
+int main(void)
 {
     SysCtlClockSet(SYSCTL_SYSDIV_5 | SYSCTL_USE_PLL | SYSCTL_OSC_MAIN | SYSCTL_XTAL_16MHZ);//40MHz
     FPUEnable();
     FPULazyStackingEnable();
     
-    UART0_init(115200);
-    key0_init();
-    car_ctrl_init();
-    servo_ctrl_init(servo_angle);
-    tracking_init();
+    UART0_init(115200);             //调试串口初始化
+    key0_init();                    //按键初始化
+    car_ctrl_init();                //小车控制初始化
+    servo_ctrl_init(servo_angle);   //机械臂控制初始化
+    camera_link_init(9600);         //摄像头连接初始化
+    qr_code_init(9600);             //二维码模块初始化
+    wifi_link_init(115200);         //Wifi连接初始化(暂时用来进行Zigbee远程通信调试串口)
+    display_init(9600);             //屏幕显示初始化
+    tracking_init();                //循迹模块初始化
     
-    printf("All Ready\n");
-    interrupt_priority_set();
-    IntMasterEnable();
+    printf("All Ready\n");          //输出提示信息
+    interrupt_priority_set();       //设置中断优先级
+    IntMasterEnable();              //打开全局中断
 
     /*************************************/
-    //功能测试
-    //implement
+    //用来进行功能测试
+    //
+    //
+    while(1){
+        printf("Zigbee\n");
+        delay_ms(100);
+    }
     /*************************************/
-    waitKey();
-    car_ready_move();
-    car_move_to(code_x, code_y, X_PRE);//走到二维码区
-    //
-    //读取二维码
-    //
-    delay_ms(1000);
     
-    //
-    //走到原料区，摄像头读取颜色顺序
-    //
+    waitKey();
+    qr_code_change();                   //打开二维码识别
+    car_ready_move();
+    car_move_to(code_x, code_y, X_PRE); //走到二维码区
+
+    //读取二维码
+    while(1){
+        if(qr_code_get){
+            qr_code_get = 0;
+            qr_code1_show();
+            break;
+        }
+    }
+    qr_code_change();                   //关闭二维码识别
+    
+    //摄像头读取颜色顺序
+    while(!color_get){
+        car_move_to(4, 3, X_PRE);
+        car_move_to(4, 1, X_PRE);
+    }
+    IntDisable(INT_UART3);
+    color_get = 0;
+    color_show();
     
     for(uint8_t i = 0; i < 3; i++){
         car_move_to(material_x, material_y, Y_PRE);         //走到原料区
@@ -79,7 +103,19 @@ int main()
         place_to_work();                                   //放下物块到加工区
     }
     
-    car_move_to(code_x, code_y, Y_PRE);//读取成品搬运顺序
+    //读取成品搬运顺序
+    qr_code_change();//打开二维码识别
+    car_move_to(code_x, code_y, Y_PRE);
+    //读取二维码
+    while(1){
+        if(qr_code_get){
+            qr_code_get = 0;
+            qr_code2_show();
+            break;
+        }
+    }
+    qr_code_change();//关闭二维码识别
+    IntDisable(INT_UART4);
 
     //1
     car_move_to(work_x + task2[0] -2, work_y, X_PRE);   //走到加工区

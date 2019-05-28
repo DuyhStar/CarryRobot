@@ -5,5 +5,6 @@
 #include <stdbool.h>
 
 void qr_code_init(uint32_t baud);
+void qr_code_change(void);
 
 #endif /* _QR_CODE_H_ */
